@@ -3,7 +3,6 @@ package com.thebaileybrew.baileybrewbook.ui;
 import android.app.Activity;
 
 import com.google.android.exoplayer2.DefaultLoadControl;
-import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.LoadControl;
 import com.google.android.exoplayer2.SimpleExoPlayer;
@@ -17,26 +16,27 @@ import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
 import com.google.android.material.appbar.CollapsingToolbarLayout;
 
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 
-import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import com.google.android.material.button.MaterialButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.gordonwong.materialsheetfab.MaterialSheetFab;
 import com.shuhart.stepview.StepView;
 import com.thebaileybrew.baileybrewbook.BaileyBrewBook;
+import com.thebaileybrew.baileybrewbook.utils.widget.BrewBookRecipeWidget;
 import com.thebaileybrew.baileybrewbook.R;
 import com.thebaileybrew.baileybrewbook.database.RecipeRepository;
 import com.thebaileybrew.baileybrewbook.database.models.Ingredient;
@@ -81,6 +81,8 @@ public class RecipeDetailFragment extends Fragment implements View.OnClickListen
 
     private Boolean mTwoPane = false;
 
+    private SharedPreferences sharedPreferences;
+
     public RecipeDetailFragment() {
         recipeRepository = new RecipeRepository(BaileyBrewBook.getContext());
     }
@@ -109,6 +111,8 @@ public class RecipeDetailFragment extends Fragment implements View.OnClickListen
             if (appBarLayout != null) {
                 appBarLayout.setTitle(mRecipe.getRecipeName());
             }
+
+            sharedPreferences = PreferenceManager.getDefaultSharedPreferences(BaileyBrewBook.getContext());
         }
     }
 
@@ -122,11 +126,21 @@ public class RecipeDetailFragment extends Fragment implements View.OnClickListen
             if (mTwoPane) {
                 fab = (FloatingActionButton) rootView.findViewById(R.id.floating_button);
                 fab.setOnClickListener(this);
+                FloatingActionButton ingredientFab = rootView.findViewById(R.id.floating_add_to_widget_two_pane);
+                ingredientFab.setOnClickListener(this);
+                TextView ingredientTextView = rootView.findViewById(R.id.textview_add_to_widget);
+                ingredientTextView.setVisibility(View.VISIBLE);
             } else {
                 FloatingActionButton twoPaneFab = (FloatingActionButton) rootView.findViewById(R.id.floating_button);
                 twoPaneFab.setVisibility(View.INVISIBLE);
+                FloatingActionButton ingredientFab = rootView.findViewById(R.id.floating_add_to_widget_two_pane);
+                ingredientFab.setVisibility(View.GONE);
+                TextView ingredientTextView = rootView.findViewById(R.id.textview_add_to_widget);
+                ingredientTextView.setVisibility(View.GONE);
                 fab = getActivity().findViewById(R.id.floating_button_locked);
                 fab.setOnClickListener(this);
+                FloatingActionButton widgetFab = getActivity().findViewById(R.id.floating_button_add_to_widget);
+                widgetFab.setOnClickListener(this);
             }
             sheetView = rootView.findViewById(R.id.fab_sheet);
             overlayView = rootView.findViewById(R.id.overlay);
@@ -224,6 +238,14 @@ public class RecipeDetailFragment extends Fragment implements View.OnClickListen
             case R.id.floating_button_locked:
                 materialSheetFab.showSheet();
                 break;
+            case R.id.floating_button_add_to_widget:
+            case R.id.floating_add_to_widget_two_pane:
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putInt("recipe_id", mRecipe.getRecipeId());
+                editor.putString("recipe_name", mRecipe.getRecipeName());
+                editor.apply();
+                Log.e(TAG, "onClick: recipe is: " + mRecipe.getRecipeId() + " " + mRecipe.getRecipeName() );
+                Toast.makeText(BaileyBrewBook.getContext(), "Recipe Saved To Widgets", Toast.LENGTH_SHORT).show();
             default:
                 break;
         }

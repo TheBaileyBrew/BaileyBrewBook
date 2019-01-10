@@ -29,11 +29,12 @@ dependencies {
     implementation "androidx.recyclerview:recyclerview:$androidXVersion"
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
     implementation 'com.shuhart.stepview:stepview:1.4.0'
-
     implementation 'com.gordonwong:material-sheet-fab:1.2.1'
 
+    //dependencies for testing
     testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'androidx.test:runner:1.1.1'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.0'
+    androidTestImplementation 'androidx.test:rules:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.1'
 
     //dependencies for ExoPlayer
@@ -47,5 +48,7 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.8.5'
     implementation 'androidx.room:room-runtime:2.0.0'
     annotationProcessor 'androidx.room:room-compiler:2.0.0'
+
+    //dependencies for Widgets
 
 }

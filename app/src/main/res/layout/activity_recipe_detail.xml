@@ -60,8 +60,18 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
+        app:fabSize="mini"
         app:layout_anchorGravity="end|bottom"
         app:srcCompat="@drawable/ingredients_fab_icon"
+        app:layout_anchor="@id/app_bar"/>
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/floating_button_add_to_widget"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="70dp"
+        app:fabSize="mini"
+        app:layout_anchorGravity="end|bottom"
+        app:srcCompat="@drawable/recipe_add_to_widget_icon"
         app:layout_anchor="@id/app_bar"/>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

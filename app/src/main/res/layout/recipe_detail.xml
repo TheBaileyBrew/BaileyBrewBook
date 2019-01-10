@@ -96,6 +96,23 @@
                     android:id="@+id/ingredients_list"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"/>
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/floating_add_to_widget_two_pane"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="start|bottom"
+                    app:backgroundTint="@color/colorPrimaryDark"
+                    app:srcCompat="@drawable/recipe_add_to_widget_icon"
+                    android:layout_margin="6dp"/>
+                <TextView
+                    android:id="@+id/textview_add_to_widget"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|start"
+                    android:layout_marginStart="60dp"
+                    android:layout_marginBottom="16dp"
+                    android:textColor="@color/colorPrimaryText"
+                    android:text="ADD TO WIDGET"/>
             </androidx.cardview.widget.CardView>
 
         </io.codetail.widget.RevealLinearLayout>
