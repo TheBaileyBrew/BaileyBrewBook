@@ -24,23 +24,29 @@ public class Step {
         this.stepVideoUrl = stepVideoUrl;
     }
 
-    public void setStepThumbnail(String stepThumbnail) {
-        this.stepThumbnail = stepThumbnail;
-    }
+// --Commented out by Inspection START (1/11/2019 1:06 PM):
+//    public void setStepThumbnail(String stepThumbnail) {
+//        this.stepThumbnail = stepThumbnail;
+//    }
+// --Commented out by Inspection STOP (1/11/2019 1:06 PM)
 
-    public int getStepId() {
-        return stepId;
-    }
+// --Commented out by Inspection START (1/11/2019 1:06 PM):
+//    public int getStepId() {
+//        return stepId;
+//    }
+// --Commented out by Inspection STOP (1/11/2019 1:06 PM)
 
     public String getStepShortDescription() {
         return stepShortDescription;
     }
 
-    public String getFullDescription() {
-        return fullDescription;
-    }
-
-    public String getStepVideoUrl() {
+// --Commented out by Inspection START (1/11/2019 1:06 PM):
+//    public String getFullDescription() {
+//        return fullDescription;
+//    }
+//
+//    public String getStepVideoUrl() {
+// --Commented out by Inspection STOP (1/11/2019 1:06 PM)
         return stepVideoUrl;
     }
 

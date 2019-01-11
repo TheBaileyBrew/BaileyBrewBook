@@ -10,7 +10,7 @@ import java.util.List;
 
 import androidx.room.TypeConverter;
 
-public class ListIngredientConverter {
+class ListIngredientConverter {
 
     @TypeConverter
     public static List<Ingredient> stringToList(String json) {

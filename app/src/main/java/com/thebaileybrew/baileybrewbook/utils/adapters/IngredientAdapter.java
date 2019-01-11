@@ -15,7 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 
 public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.ViewHolder> {
-    private static final String TAG = IngredientAdapter.class.getSimpleName();
+    // --Commented out by Inspection (1/11/2019 1:06 PM):private static final String TAG = IngredientAdapter.class.getSimpleName();
 
     private final LayoutInflater layoutInflater;
     private List<Ingredient> ingredients;
@@ -42,10 +42,12 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.Vi
         viewHolder.ingredientQuantity.setText(ingQty);
     }
 
-    public void setIngredients(List<Ingredient> ingredients) {
-        this.ingredients = ingredients;
-        notifyDataSetChanged();
-    }
+// --Commented out by Inspection START (1/11/2019 1:06 PM):
+//    public void setIngredients(List<Ingredient> ingredients) {
+//        this.ingredients = ingredients;
+//        notifyDataSetChanged();
+//    }
+// --Commented out by Inspection STOP (1/11/2019 1:06 PM)
 
     @Override
     public int getItemCount() {

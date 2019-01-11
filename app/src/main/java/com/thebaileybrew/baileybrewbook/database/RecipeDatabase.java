@@ -16,12 +16,12 @@ public abstract class RecipeDatabase extends RoomDatabase {
     public abstract RecipeDao recipeDao();
 
     private static RecipeDatabase INSTANCE;
-    private static String DATABASE_NAME = "baileybrewrecipeslist";
 
     static RecipeDatabase getDatabase(Context context) {
         if (INSTANCE == null) {
             synchronized (RecipeDatabase.class) {
                 if (INSTANCE == null) {
+                    String DATABASE_NAME = "baileybrewrecipeslist";
                     INSTANCE = Room.databaseBuilder(context.getApplicationContext(),
                             RecipeDatabase.class, DATABASE_NAME)
                             .fallbackToDestructiveMigration()

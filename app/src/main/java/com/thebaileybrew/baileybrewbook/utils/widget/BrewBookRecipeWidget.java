@@ -3,24 +3,15 @@ package com.thebaileybrew.baileybrewbook.utils.widget;
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.RemoteViews;
 
-import com.thebaileybrew.baileybrewbook.BaileyBrewBook;
 import com.thebaileybrew.baileybrewbook.R;
-import com.thebaileybrew.baileybrewbook.database.RecipeRepository;
-import com.thebaileybrew.baileybrewbook.database.models.Ingredient;
-import com.thebaileybrew.baileybrewbook.database.models.Recipe;
 import com.thebaileybrew.baileybrewbook.ui.RecipeDetailActivity;
-import com.thebaileybrew.baileybrewbook.ui.RecipeListActivity;
-
-import java.util.List;
 
 /**
  * Implementation of App Widget functionality.
@@ -28,14 +19,12 @@ import java.util.List;
 public class BrewBookRecipeWidget extends AppWidgetProvider {
 
     private final static String TAG = BrewBookRecipeWidget.class.getSimpleName();
-    private static SharedPreferences sharedPreferences;
-    private static String recipeName;
 
-    static void updateAppWidget(Context context, AppWidgetManager appWidgetManager,
-                                int appWidgetId) {
+    private static void updateAppWidget(Context context, AppWidgetManager appWidgetManager,
+                                        int appWidgetId) {
         //Get Recipe Name from Prefs
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-        recipeName = sharedPreferences.getString("recipe_name","Brew Book Recipe");
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        String recipeName = sharedPreferences.getString("recipe_name", "Brew Book Recipe");
 
         // Construct the RemoteViews object
         RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.ingredient_grid_view);

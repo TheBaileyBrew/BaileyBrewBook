@@ -20,7 +20,7 @@ import static org.hamcrest.CoreMatchers.anything;
 @RunWith(AndroidJUnit4.class)
 public class RecipeSelectionBasicTest {
 
-    public static final String RECIPE_INTRO = "Recipe Introduction";
+    private static final String RECIPE_INTRO = "Recipe Introduction";
 
     @Rule
     public ActivityTestRule<ListActivity> mActivityTestRule

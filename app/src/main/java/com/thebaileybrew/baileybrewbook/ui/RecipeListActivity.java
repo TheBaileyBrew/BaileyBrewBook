@@ -1,20 +1,14 @@
 package com.thebaileybrew.baileybrewbook.ui;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.appcompat.widget.Toolbar;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
 
 import android.os.Handler;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -36,18 +30,20 @@ import java.util.List;
  * item details side-by-side using two vertical panes.
  */
 public class RecipeListActivity extends AppCompatActivity implements RecipeCardRecycler.RecipeClickHandler {
-    private static final String TAG = RecipeListActivity.class.getSimpleName();
+    // --Commented out by Inspection (1/11/2019 1:06 PM):private static final String TAG = RecipeListActivity.class.getSimpleName();
 
     private List<Recipe> recipes;
-    RecipeRepository recipeRepository = new RecipeRepository(getApplication());
-    RecipeCardRecycler recipeCardRecycler;
-    ImageView recipeImagePath;
-    String currentSelection;
+    private final RecipeRepository recipeRepository = new RecipeRepository(getApplication());
+    private RecipeCardRecycler recipeCardRecycler;
+    private ImageView recipeImagePath;
+    // --Commented out by Inspection (1/11/2019 1:06 PM):String currentSelection;
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
-     * device.
-     */
-    private boolean mTwoPane;
+// --Commented out by Inspection START (1/11/2019 1:06 PM):
+//     * device.
+//     */
+//    private boolean mTwoPane;
+// --Commented out by Inspection STOP (1/11/2019 1:06 PM)
     private boolean mSelected;
     private boolean doubleBackToExitPressedOnce = false;
 
@@ -77,7 +73,7 @@ public class RecipeListActivity extends AppCompatActivity implements RecipeCardR
         recipes = recipeRepository.getRecipes(recipeCardRecycler);
         recyclerView.setAdapter(recipeCardRecycler);
         recyclerView.setLayoutManager(linearLayoutManager);
-        recipeCardRecycler.notifyDataSetChanged();;
+        recipeCardRecycler.notifyDataSetChanged();
     }
 
     @Override

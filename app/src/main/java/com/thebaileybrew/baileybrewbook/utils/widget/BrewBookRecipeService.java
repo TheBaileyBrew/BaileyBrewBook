@@ -30,12 +30,12 @@ public class BrewBookRecipeService extends RemoteViewsService {
 class BrewBookRemoteViewsFactory implements RemoteViewsService.RemoteViewsFactory {
 
     private final static String TAG = BrewBookRemoteViewsFactory.class.getSimpleName();
-    Context mContext;
-    Recipe mRecipe;
-    int mRecipeId;
-    RecipeRepository mRepository;
-    SharedPreferences sharedPreferences;
-    List<Ingredient> mIngredients = new ArrayList<>();
+    private final Context mContext;
+    private Recipe mRecipe;
+    private int mRecipeId;
+    private RecipeRepository mRepository;
+    private SharedPreferences sharedPreferences;
+    private List<Ingredient> mIngredients = new ArrayList<>();
 
     public BrewBookRemoteViewsFactory(Context appContext) {
         mContext = appContext;

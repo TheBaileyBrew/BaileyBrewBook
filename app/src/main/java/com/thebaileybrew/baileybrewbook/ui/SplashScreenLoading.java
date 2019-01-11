@@ -15,9 +15,11 @@ import com.thebaileybrew.baileybrewbook.BaileyBrewBook;
 import com.thebaileybrew.baileybrewbook.R;
 import com.thebaileybrew.baileybrewbook.database.RecipeRepository;
 import com.thebaileybrew.baileybrewbook.utils.JsonParseUtils;
+import com.thebaileybrew.baileybrewbook.utils.NetworkUtils;
+import com.thebaileybrew.baileybrewbook.utils.adapters.JsonLoader;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.net.URL;
+import java.util.concurrent.ExecutionException;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -26,8 +28,9 @@ public class SplashScreenLoading extends AppCompatActivity {
 
     private final static String RECIPE_PREFERENCE_LOAD = "share_prefs_load";
     private final static String RECIPE_INITIAL_LOAD = "initial_load";
+    private final static String JSON_DATA_LOCATION = "https://d17h27t6h515a5.cloudfront.net/topher/2017/May/59121517_baking/baking.json";
     private final static int SPLASH_DELAY = 3000;
-    private final static int FLASH_SPLASH_DELAY = 1000;
+    // --Commented out by Inspection (1/11/2019 1:06 PM):private final static int FLASH_SPLASH_DELAY = 1000;
 
     private Runnable loadDB;
     private Runnable noLoadDB;
@@ -35,8 +38,13 @@ public class SplashScreenLoading extends AppCompatActivity {
 
     private ImageView menuIcon;
     private TextView splashTitle;
-    private Animation animCycle;
-    private Animation animFadeIn;
+// --Commented out by Inspection START (1/11/2019 1:06 PM):
+//    private Animation animCycle;
+//    private Animation animFadeIn;
+// --Commented out by Inspection STOP (1/11/2019 1:06 PM)
+
+    private URL recipeLocation;
+    private String jsonResponse;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,24 +63,35 @@ public class SplashScreenLoading extends AppCompatActivity {
         prefsEditor.putBoolean(RECIPE_INITIAL_LOAD, true);
         prefsEditor.apply();
 
-        if (sharedPrefs.getBoolean(RECIPE_INITIAL_LOAD, true)) {
+        if (NetworkUtils.checkNetwork(BaileyBrewBook.getContext())) {
             prefsEditor.putBoolean(RECIPE_INITIAL_LOAD, false);
-            Log.e(TAG, "onCreate: yes initial load" );
-            new Handler().postDelayed(loadDB,0);
-
+            Log.e(TAG, "onCreate: Network OK");
+            if (sharedPrefs.getBoolean(RECIPE_INITIAL_LOAD, true)) {
+                Log.e(TAG, "onCreate: Get Json Data");
+                new Handler().postDelayed(loadDB, 0);
+            }
         } else {
-            Log.e(TAG, "onCreate: no initial load" );
-            new Handler().postDelayed(noLoadDB,0);
+            Log.e(TAG, "onCreate: No Network");
+            new Handler().postDelayed(noLoadDB, 0);
         }
         Log.e(TAG, "onCreate: requesting intent");
         new Handler().postDelayed(reqIntent, SPLASH_DELAY);
     }
 
-    public void setRunnables(final RecipeRepository recipeRepository) {
+    private void setRunnables(final RecipeRepository recipeRepository) {
         loadDB = new Runnable() {
             @Override
             public void run() {
-                JsonParseUtils.extractJsonDataToRoom(loadJsonFromAsset(), recipeRepository);
+                JsonLoader jsonLoader = new JsonLoader();
+                try {
+                    jsonResponse = jsonLoader.execute(JSON_DATA_LOCATION).get();
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                JsonParseUtils.extractJsonDataToRoom(jsonResponse, recipeRepository);
+
                 splashTitle.setVisibility(View.VISIBLE);
                 splashTitle.startAnimation(animFadeIn);
                 splashTitle.setVisibility(View.VISIBLE);
@@ -82,7 +101,6 @@ public class SplashScreenLoading extends AppCompatActivity {
         noLoadDB = new Runnable() {
             @Override
             public void run() {
-                JsonParseUtils.extractJsonDataToRoom(loadJsonFromAsset(), recipeRepository);
                 splashTitle.setVisibility(View.VISIBLE);
                 splashTitle.startAnimation(animFadeIn);
                 splashTitle.setVisibility(View.VISIBLE);
@@ -97,25 +115,10 @@ public class SplashScreenLoading extends AppCompatActivity {
         };
     }
 
-    public void requestIntent() {
+    private void requestIntent() {
         Intent openRecipes = new Intent(SplashScreenLoading.this, RecipeListActivity.class);
         startActivity(openRecipes);
     }
 
 
-    public String loadJsonFromAsset() {
-        String jsonString = null;
-        try {
-            InputStream inputStream = getApplication().getAssets().open("baking.json");
-            int size = inputStream.available();
-            byte[] buffer = new byte[size];
-            inputStream.read(buffer);
-            inputStream.close();
-            jsonString = new String(buffer, "UTF-8");
-        } catch (IOException ie) {
-            ie.printStackTrace();
-            return null;
-        }
-        return jsonString;
-    }
 }

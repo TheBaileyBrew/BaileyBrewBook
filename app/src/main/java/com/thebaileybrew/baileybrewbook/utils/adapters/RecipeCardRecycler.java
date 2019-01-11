@@ -15,11 +15,10 @@ import java.util.List;
 import androidx.recyclerview.widget.RecyclerView;
 
 public class RecipeCardRecycler extends RecyclerView.Adapter<RecipeCardRecycler.ViewHolder> {
-    private static final String TAG = RecipeCardRecycler.class.getSimpleName();
+    // --Commented out by Inspection (1/11/2019 1:06 PM):private static final String TAG = RecipeCardRecycler.class.getSimpleName();
 
     private final LayoutInflater layoutInflater;
     private List<Recipe> recipeCollection;
-    private Boolean mTwoPane;
 
     final private RecipeClickHandler recipeClickHandler;
 
@@ -31,7 +30,7 @@ public class RecipeCardRecycler extends RecyclerView.Adapter<RecipeCardRecycler.
         this.layoutInflater = LayoutInflater.from(context);
         this.recipeClickHandler = recipeClickHandler;
         this.recipeCollection = recipeCollection;
-        this.mTwoPane = mTwoPane;
+        Boolean mTwoPane1 = mTwoPane;
     }
 
     @Override

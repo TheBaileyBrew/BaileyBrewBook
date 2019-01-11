@@ -20,7 +20,7 @@ public class JsonParseUtils {
     private final static String RECIPE_ID = "id";
     private final static String RECIPE_NAME = "name";
     private final static String RECIPE_SERVINGS = "servings";
-    private final static String RECIPE_IMAGE_URL = "image";
+    // --Commented out by Inspection (1/11/2019 1:06 PM):private final static String RECIPE_IMAGE_URL = "image";
     private final static String RECIPE_INGREDIENTS_LIST = "ingredients";
     private final static String RECIPE_STEPS_LIST = "steps";
 
@@ -32,6 +32,10 @@ public class JsonParseUtils {
     private final static String STEP_SHORT_DESC = "shortDescription";
     private final static String STEP_LONG_DESC = "description";
     private final static String STEP_VIDEO_URL = "videoURL";
+
+
+    private JsonParseUtils() {}
+
 
 
 
@@ -50,7 +54,6 @@ public class JsonParseUtils {
                 int recipeID = jsonObject.optInt(RECIPE_ID);
                 String recipeName = jsonObject.optString(RECIPE_NAME);
                 int recipeServing = jsonObject.optInt(RECIPE_SERVINGS);
-                String recipeImageURL = jsonObject.optString(RECIPE_IMAGE_URL);
                 JSONArray jsonIngredients = jsonObject.getJSONArray(RECIPE_INGREDIENTS_LIST);
                 for (int ing = 0; ing <jsonIngredients.length(); ing++) {
                     JSONObject jsonIngredientsObject = jsonIngredients.getJSONObject(ing);
@@ -73,7 +76,6 @@ public class JsonParseUtils {
                 currentRecipe.setRecipeId(recipeID);
                 currentRecipe.setRecipeName(recipeName);
                 currentRecipe.setRecipeServing(recipeServing);
-                currentRecipe.setRecipeImage(recipeImageURL);
                 currentRecipe.setRecipeIngredients(recipeIngredients);
                 currentRecipe.setSteps(recipeSteps);
                 repository.insertRecipe(currentRecipe);

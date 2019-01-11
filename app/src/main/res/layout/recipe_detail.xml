@@ -45,6 +45,7 @@
     <com.google.android.exoplayer2.ui.SimpleExoPlayerView
         android:id="@+id/exoplayer"
         app:layout_constraintTop_toBottomOf="@id/recipe_step_name"
+        app:controller_layout_id="@layout/custom_playback_control"
         android:layout_marginTop="12dp"
         android:layout_width="match_parent"
         android:layout_height="450dp"/>

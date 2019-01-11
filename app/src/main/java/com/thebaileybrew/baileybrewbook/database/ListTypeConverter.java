@@ -11,7 +11,7 @@ import java.util.List;
 
 import androidx.room.TypeConverter;
 
-public class ListTypeConverter {
+class ListTypeConverter {
 
     @TypeConverter
     public static List<Step> stringToList(String json) {

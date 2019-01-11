@@ -13,8 +13,8 @@ import java.util.concurrent.ExecutionException;
 public class RecipeRepository {
     private static final String TAG = RecipeRepository.class.getSimpleName();
 
-    private RecipeDao mRecipeDao;
-    private List<Recipe> mRecipes;
+    private final RecipeDao mRecipeDao;
+    // --Commented out by Inspection (1/11/2019 1:06 PM):private List<Recipe> mRecipes;
 
     public RecipeRepository(Application application) {
         RecipeDatabase db = RecipeDatabase.getDatabase(application);
@@ -34,8 +34,8 @@ public class RecipeRepository {
     }
 
     private static class getAllRecipesAsyncTask extends  AsyncTask<Void, Void, List<Recipe>> {
-        private RecipeDao mRecipeDao;
-        private RecipeCardRecycler mAdapter;
+        private final RecipeDao mRecipeDao;
+        private final RecipeCardRecycler mAdapter;
 
         getAllRecipesAsyncTask(RecipeDao recipeDao, RecipeCardRecycler adapter) {
             this.mRecipeDao = recipeDao;
@@ -62,7 +62,7 @@ public class RecipeRepository {
     }
 
     private static class checkForDatabaseRecordAsyncTask extends AsyncTask<Integer, Void, Recipe> {
-        private RecipeDao mRecipeDao;
+        private final RecipeDao mRecipeDao;
 
         checkForDatabaseRecordAsyncTask(RecipeDao recipeDao) {
             this.mRecipeDao = recipeDao;
@@ -82,7 +82,7 @@ public class RecipeRepository {
     }
 
     private static class populateDatabaseWithRecipesAsyncTask extends AsyncTask<Recipe, Void, Void> {
-        private RecipeDao mRecipeDao;
+        private final RecipeDao mRecipeDao;
 
         populateDatabaseWithRecipesAsyncTask(RecipeDao recipeDao) {
             this.mRecipeDao = recipeDao;

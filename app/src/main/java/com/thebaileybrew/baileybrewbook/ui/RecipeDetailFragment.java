@@ -20,6 +20,7 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -36,7 +37,6 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.gordonwong.materialsheetfab.MaterialSheetFab;
 import com.shuhart.stepview.StepView;
 import com.thebaileybrew.baileybrewbook.BaileyBrewBook;
-import com.thebaileybrew.baileybrewbook.utils.widget.BrewBookRecipeWidget;
 import com.thebaileybrew.baileybrewbook.R;
 import com.thebaileybrew.baileybrewbook.database.RecipeRepository;
 import com.thebaileybrew.baileybrewbook.database.models.Ingredient;
@@ -59,25 +59,26 @@ public class RecipeDetailFragment extends Fragment implements View.OnClickListen
 
     public static final String ARG_ITEM_ID = "item_id";
     public static final String ARG_BOOLEAN = "boolean_two_pane";
+    private static final String SAVED_POSITION = "saved_player_position";
+    private static  final String SAVED_STEP = "saved_stepper_position";
 
     private Recipe mRecipe = new Recipe();
-    private RecipeRepository recipeRepository;
-    RecyclerView ingredientList;
+    private final RecipeRepository recipeRepository;
+    private RecyclerView ingredientList;
     private List<Ingredient> allIngredients = new ArrayList<>();
     private List<Step> allSteps = new ArrayList<>();
     private StepView stepView;
     private TextView recipeStepTitle;
     private TextView recipeStepDescription;
+    private int currentSelectedStep;
 
-    private FloatingActionButton fab;
-    private View sheetView;
-    private View overlayView;
-    private int sheetColor;
-    private int fabColor;
     private MaterialSheetFab materialSheetFab;
 
     private SimpleExoPlayer exoPlayer;
     private PlayerView exoPlayerView;
+    private long playbackPosition;
+    private int currentWindow;
+    private boolean playWhenReady;
 
     private Boolean mTwoPane = false;
 
@@ -101,7 +102,7 @@ public class RecipeDetailFragment extends Fragment implements View.OnClickListen
             mRecipe = recipeRepository.getSingleRecipe(recipeId);
 
             Activity activity = this.getActivity();
-            CollapsingToolbarLayout appBarLayout = (CollapsingToolbarLayout) activity.findViewById(R.id.toolbar_layout);
+            CollapsingToolbarLayout appBarLayout = activity.findViewById(R.id.toolbar_layout);
 
             allIngredients = mRecipe.getRecipeIngredients();
             Log.e(TAG, "onCreate: ingredient size: " + allIngredients.size());
@@ -113,7 +114,20 @@ public class RecipeDetailFragment extends Fragment implements View.OnClickListen
             }
 
             sharedPreferences = PreferenceManager.getDefaultSharedPreferences(BaileyBrewBook.getContext());
+
+            if(savedInstanceState != null) {
+                playbackPosition = savedInstanceState.getLong(SAVED_POSITION, 0);
+                currentSelectedStep = savedInstanceState.getInt(SAVED_STEP, 0);
+
+            }
         }
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putLong(SAVED_POSITION, exoPlayer.getCurrentPosition());
+        outState.putInt(SAVED_STEP, stepView.getCurrentStep());
     }
 
     @Override
@@ -123,15 +137,16 @@ public class RecipeDetailFragment extends Fragment implements View.OnClickListen
 
         // Show the dummy content as text in a TextView.
         if (mRecipe != null) {
+            FloatingActionButton fab;
             if (mTwoPane) {
-                fab = (FloatingActionButton) rootView.findViewById(R.id.floating_button);
+                fab = rootView.findViewById(R.id.floating_button);
                 fab.setOnClickListener(this);
                 FloatingActionButton ingredientFab = rootView.findViewById(R.id.floating_add_to_widget_two_pane);
                 ingredientFab.setOnClickListener(this);
                 TextView ingredientTextView = rootView.findViewById(R.id.textview_add_to_widget);
                 ingredientTextView.setVisibility(View.VISIBLE);
             } else {
-                FloatingActionButton twoPaneFab = (FloatingActionButton) rootView.findViewById(R.id.floating_button);
+                FloatingActionButton twoPaneFab = rootView.findViewById(R.id.floating_button);
                 twoPaneFab.setVisibility(View.INVISIBLE);
                 FloatingActionButton ingredientFab = rootView.findViewById(R.id.floating_add_to_widget_two_pane);
                 ingredientFab.setVisibility(View.GONE);
@@ -142,10 +157,10 @@ public class RecipeDetailFragment extends Fragment implements View.OnClickListen
                 FloatingActionButton widgetFab = getActivity().findViewById(R.id.floating_button_add_to_widget);
                 widgetFab.setOnClickListener(this);
             }
-            sheetView = rootView.findViewById(R.id.fab_sheet);
-            overlayView = rootView.findViewById(R.id.overlay);
-            sheetColor = getActivity().getResources().getColor(R.color.colorAccent);
-            fabColor = getActivity().getResources().getColor(R.color.colorPrimaryDark);
+            View sheetView = rootView.findViewById(R.id.fab_sheet);
+            View overlayView = rootView.findViewById(R.id.overlay);
+            int sheetColor = getActivity().getResources().getColor(R.color.colorAccent);
+            int fabColor = getActivity().getResources().getColor(R.color.colorPrimaryDark);
             ingredientList = rootView.findViewById(R.id.ingredients_list);
             ingredientList.setLayoutManager(new LinearLayoutManager(BaileyBrewBook.getContext(),
                     RecyclerView.VERTICAL, false));
@@ -155,9 +170,11 @@ public class RecipeDetailFragment extends Fragment implements View.OnClickListen
             exoPlayerView = rootView.findViewById(R.id.exoplayer);
 
 
-            stepView = (StepView) rootView.findViewById(R.id.recipe_steps);
+            stepView = rootView.findViewById(R.id.recipe_steps);
             stepView.setStepsNumber(allSteps.size());
             stepView.setOnStepClickListener(this);
+            stepView.go(currentSelectedStep, true);
+            changeExoPlayer(currentSelectedStep);
             recipeStepTitle = rootView.findViewById(R.id.recipe_step_name);
             recipeStepTitle.setText(allSteps.get(0).getStepShortDescription());
             recipeStepDescription = rootView.findViewById(R.id.recipe_full_description);
@@ -176,7 +193,7 @@ public class RecipeDetailFragment extends Fragment implements View.OnClickListen
         }
     }
 
-    public void initializeExoPlayer() {
+    private void initializeExoPlayer() {
         //Get the first step instructional video playing
         if (allSteps.get(0).getStepVideoUrl() != null) {
             Uri currentStep = Uri.parse(allSteps.get(0).getStepVideoUrl());
@@ -185,13 +202,14 @@ public class RecipeDetailFragment extends Fragment implements View.OnClickListen
             LoadControl loadControl = new DefaultLoadControl();
             exoPlayer = ExoPlayerFactory.newSimpleInstance(BaileyBrewBook.getContext(),track,loadControl);
             exoPlayerView.setPlayer(exoPlayer);
+            exoPlayer.setPlayWhenReady(playWhenReady);
+            exoPlayer.seekTo(currentWindow, playbackPosition);
 
             String userAgent = Util.getUserAgent(BaileyBrewBook.getContext(), "Bailey Brew Book");
             MediaSource mediaSource = new ExtractorMediaSource(currentStep,
                     new DefaultDataSourceFactory(BaileyBrewBook.getContext(), userAgent),
                     new DefaultExtractorsFactory(), null, null);
             exoPlayer.prepare(mediaSource);
-            exoPlayer.setPlayWhenReady(true);
 
         }
     }
@@ -215,21 +233,54 @@ public class RecipeDetailFragment extends Fragment implements View.OnClickListen
         }
     }
 
+
     private void releasePlayer() {
         if (exoPlayer != null) {
+            playbackPosition = exoPlayer.getCurrentPosition(); //long
+            currentWindow = exoPlayer.getCurrentWindowIndex(); //int
+            playWhenReady = exoPlayer.getPlayWhenReady(); //boolean
             exoPlayer.stop();
             exoPlayer.release();
             exoPlayer = null;
         }
     }
 
-    public void changeExoPlayer(int step) {
+    private void changeExoPlayer(int step) {
         releasePlayer();
         reloadExoPlayer(step);
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+        if (Util.SDK_INT > 23) {
+            initializeExoPlayer();
+        }
+    }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        if ((Util.SDK_INT <= 23 || exoPlayer == null)) {
+            initializeExoPlayer();
+        }
+    }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (Util.SDK_INT <= 23) {
+            releasePlayer();
+        }
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (Util.SDK_INT > 23) {
+            releasePlayer();
+        }
+    }
 
     @Override
     public void onClick(View v) {
@@ -267,7 +318,4 @@ public class RecipeDetailFragment extends Fragment implements View.OnClickListen
 
     }
 
-    public Recipe getCurrentRecipe() {
-        return mRecipe;
-    }
 }

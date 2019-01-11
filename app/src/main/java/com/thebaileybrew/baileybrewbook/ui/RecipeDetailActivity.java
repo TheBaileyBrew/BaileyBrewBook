@@ -2,12 +2,11 @@ package com.thebaileybrew.baileybrewbook.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
+
 import androidx.appcompat.widget.Toolbar;
 
 import android.util.Log;
-import android.view.View;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.ActionBar;
 import androidx.fragment.app.Fragment;
@@ -31,13 +30,16 @@ import java.util.List;
  */
 public class RecipeDetailActivity extends AppCompatActivity {
     private static final String TAG = RecipeDetailActivity.class.getSimpleName();
+
+    // --Commented out by Inspection (1/11/2019 1:06 PM):private static final String GOOGLE_SEARCH = "https://www.google.com/search?biw=1366&bih=675&tbm=isch&sa=1&ei=qFSJWsuTNc-wzwKFrZHoCw&q=";
+
     private ImageView recipeImage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recipe_detail);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.detail_toolbar);
+        Toolbar toolbar = findViewById(R.id.detail_toolbar);
         setSupportActionBar(toolbar);
         recipeImage = findViewById(R.id.recipe_imageview);
 
@@ -75,7 +77,27 @@ public class RecipeDetailActivity extends AppCompatActivity {
     private void loadToolbarImage(int currentID) {
         RecipeRepository recipeRepository = new RecipeRepository(BaileyBrewBook.getContext());
         Recipe currentRecipe = recipeRepository.getSingleRecipe(currentID);
-        Picasso.get().load(currentRecipe.getRecipeImage()).into(recipeImage);
+        Log.e(TAG, "loadToolbarImage: current name: " + currentRecipe.getRecipeName() );
+        final String currentRecipeName = currentRecipe.getRecipeName();
+        String singleImage ="";
+        switch (currentRecipeName) {
+            case "Brownies":
+                singleImage = "https://assets.epicurious.com/photos/57c5bf64d8f441e50948d29d/2:1/w_1260%2Ch_630/milk-chocolate-brownies.jpg";
+                break;
+            case "Yellow Cake":
+                singleImage = "https://prods3.imgix.net/images/articles/2017_08/Facebook-yellow-cake-chocolate-frosting-recipe-dessert.jpg";
+                break;
+            case "Cheesecake":
+                singleImage = "https://d2gk7xgygi98cy.cloudfront.net/1820-3-large.jpg";
+                break;
+            case "Nutella Pie":
+                singleImage = "https://hips.hearstapps.com/del.h-cdn.co/assets/16/32/1470773544-delish-nutella-cool-whip-pie-1.jpg";
+                break;
+        }
+
+
+
+        Picasso.get().load(singleImage).into(recipeImage);
     }
 
     @Override
