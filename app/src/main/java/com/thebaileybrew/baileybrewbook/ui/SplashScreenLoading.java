@@ -35,14 +35,10 @@ public class SplashScreenLoading extends AppCompatActivity {
     private Runnable loadDB;
     private Runnable noLoadDB;
     private Runnable reqIntent;
-
     private ImageView menuIcon;
     private TextView splashTitle;
-
     private Animation animCycle;
     private Animation animFadeIn;
-
-    private URL recipeLocation;
     private String jsonResponse;
 
     @Override
