@@ -30,7 +30,7 @@ public class SplashScreenLoading extends AppCompatActivity {
     private final static String RECIPE_INITIAL_LOAD = "initial_load";
     private final static String JSON_DATA_LOCATION = "https://d17h27t6h515a5.cloudfront.net/topher/2017/May/59121517_baking/baking.json";
     private final static int SPLASH_DELAY = 3000;
-    // --Commented out by Inspection (1/11/2019 1:06 PM):private final static int FLASH_SPLASH_DELAY = 1000;
+    private final static int FLASH_SPLASH_DELAY = 1000;
 
     private Runnable loadDB;
     private Runnable noLoadDB;
@@ -38,10 +38,9 @@ public class SplashScreenLoading extends AppCompatActivity {
 
     private ImageView menuIcon;
     private TextView splashTitle;
-// --Commented out by Inspection START (1/11/2019 1:06 PM):
-//    private Animation animCycle;
-//    private Animation animFadeIn;
-// --Commented out by Inspection STOP (1/11/2019 1:06 PM)
+
+    private Animation animCycle;
+    private Animation animFadeIn;
 
     private URL recipeLocation;
     private String jsonResponse;

@@ -30,20 +30,16 @@ import java.util.List;
  * item details side-by-side using two vertical panes.
  */
 public class RecipeListActivity extends AppCompatActivity implements RecipeCardRecycler.RecipeClickHandler {
-    // --Commented out by Inspection (1/11/2019 1:06 PM):private static final String TAG = RecipeListActivity.class.getSimpleName();
+    private static final String TAG = RecipeListActivity.class.getSimpleName();
 
     private List<Recipe> recipes;
     private final RecipeRepository recipeRepository = new RecipeRepository(getApplication());
     private RecipeCardRecycler recipeCardRecycler;
     private ImageView recipeImagePath;
-    // --Commented out by Inspection (1/11/2019 1:06 PM):String currentSelection;
     /**
-     * Whether or not the activity is in two-pane mode, i.e. running on a tablet
-// --Commented out by Inspection START (1/11/2019 1:06 PM):
-//     * device.
-//     */
-//    private boolean mTwoPane;
-// --Commented out by Inspection STOP (1/11/2019 1:06 PM)
+     * Whether or not the activity is in two-pane mode, i.e. running on a tablet device.
+     */
+    private boolean mTwoPane;
     private boolean mSelected;
     private boolean doubleBackToExitPressedOnce = false;
 
