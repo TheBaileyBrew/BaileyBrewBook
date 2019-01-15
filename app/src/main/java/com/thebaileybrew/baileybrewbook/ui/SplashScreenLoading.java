@@ -14,6 +14,7 @@ import android.widget.TextView;
 import com.thebaileybrew.baileybrewbook.BaileyBrewBook;
 import com.thebaileybrew.baileybrewbook.R;
 import com.thebaileybrew.baileybrewbook.database.RecipeRepository;
+import com.thebaileybrew.baileybrewbook.utils.ConstantUtils;
 import com.thebaileybrew.baileybrewbook.utils.JsonParseUtils;
 import com.thebaileybrew.baileybrewbook.utils.NetworkUtils;
 import com.thebaileybrew.baileybrewbook.utils.adapters.JsonLoader;
@@ -26,11 +27,7 @@ import androidx.appcompat.app.AppCompatActivity;
 public class SplashScreenLoading extends AppCompatActivity {
     private final static String TAG = SplashScreenLoading.class.getSimpleName();
 
-    private final static String RECIPE_PREFERENCE_LOAD = "share_prefs_load";
-    private final static String RECIPE_INITIAL_LOAD = "initial_load";
-    private final static String JSON_DATA_LOCATION = "https://d17h27t6h515a5.cloudfront.net/topher/2017/May/59121517_baking/baking.json";
-    private final static int SPLASH_DELAY = 3000;
-    private final static int FLASH_SPLASH_DELAY = 1000;
+
 
     private Runnable loadDB;
     private Runnable noLoadDB;
@@ -53,15 +50,15 @@ public class SplashScreenLoading extends AppCompatActivity {
         animFadeIn = AnimationUtils.loadAnimation(BaileyBrewBook.getContext(), R.anim.anim_fade_in);
 
 
-        SharedPreferences sharedPrefs = getSharedPreferences(RECIPE_PREFERENCE_LOAD, MODE_PRIVATE);
+        SharedPreferences sharedPrefs = getSharedPreferences(ConstantUtils.RECIPE_PREFERENCE_LOAD, MODE_PRIVATE);
         SharedPreferences.Editor prefsEditor = sharedPrefs.edit();
-        prefsEditor.putBoolean(RECIPE_INITIAL_LOAD, true);
+        prefsEditor.putBoolean(ConstantUtils.RECIPE_INITIAL_LOAD, true);
         prefsEditor.apply();
 
         if (NetworkUtils.checkNetwork(BaileyBrewBook.getContext())) {
-            prefsEditor.putBoolean(RECIPE_INITIAL_LOAD, false);
+            prefsEditor.putBoolean(ConstantUtils.RECIPE_INITIAL_LOAD, false);
             Log.e(TAG, "onCreate: Network OK");
-            if (sharedPrefs.getBoolean(RECIPE_INITIAL_LOAD, true)) {
+            if (sharedPrefs.getBoolean(ConstantUtils.RECIPE_INITIAL_LOAD, true)) {
                 Log.e(TAG, "onCreate: Get Json Data");
                 new Handler().postDelayed(loadDB, 0);
             }
@@ -70,7 +67,7 @@ public class SplashScreenLoading extends AppCompatActivity {
             new Handler().postDelayed(noLoadDB, 0);
         }
         Log.e(TAG, "onCreate: requesting intent");
-        new Handler().postDelayed(reqIntent, SPLASH_DELAY);
+        new Handler().postDelayed(reqIntent, ConstantUtils.SPLASH_DELAY);
     }
 
     private void setRunnables(final RecipeRepository recipeRepository) {
@@ -79,7 +76,7 @@ public class SplashScreenLoading extends AppCompatActivity {
             public void run() {
                 JsonLoader jsonLoader = new JsonLoader();
                 try {
-                    jsonResponse = jsonLoader.execute(JSON_DATA_LOCATION).get();
+                    jsonResponse = jsonLoader.execute(ConstantUtils.JSON_DATA_LOCATION).get();
                 } catch (ExecutionException e) {
                     e.printStackTrace();
                 } catch (InterruptedException e) {

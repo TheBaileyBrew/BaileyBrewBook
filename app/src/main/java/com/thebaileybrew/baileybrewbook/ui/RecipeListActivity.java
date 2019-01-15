@@ -17,6 +17,7 @@ import com.squareup.picasso.Picasso;
 import com.thebaileybrew.baileybrewbook.R;
 import com.thebaileybrew.baileybrewbook.database.RecipeRepository;
 import com.thebaileybrew.baileybrewbook.database.models.Recipe;
+import com.thebaileybrew.baileybrewbook.utils.ConstantUtils;
 import com.thebaileybrew.baileybrewbook.utils.adapters.RecipeCardRecycler;
 
 import java.util.List;
@@ -76,8 +77,8 @@ public class RecipeListActivity extends AppCompatActivity implements RecipeCardR
     public void onClick(View view, Recipe recipe) {
         if(mTwoPane) {
             Bundle arguments = new Bundle();
-            arguments.putInt(RecipeDetailFragment.ARG_ITEM_ID, recipe.getRecipeId());
-            arguments.putBoolean(RecipeDetailFragment.ARG_BOOLEAN, mTwoPane);
+            arguments.putInt(ConstantUtils.ARG_ITEM_ID, recipe.getRecipeId());
+            arguments.putBoolean(ConstantUtils.ARG_BOOLEAN, mTwoPane);
             RecipeDetailFragment fragment = new RecipeDetailFragment();
             fragment.setArguments(arguments);
             getSupportFragmentManager().beginTransaction()
@@ -97,7 +98,7 @@ public class RecipeListActivity extends AppCompatActivity implements RecipeCardR
                     e.printStackTrace();
                 }
                 Intent intent = new Intent(RecipeListActivity.this, RecipeDetailActivity.class);
-                intent.putExtra(RecipeDetailFragment.ARG_ITEM_ID, recipe.getRecipeId());
+                intent.putExtra(ConstantUtils.ARG_ITEM_ID, recipe.getRecipeId());
                 startActivity(intent);
             }
         }

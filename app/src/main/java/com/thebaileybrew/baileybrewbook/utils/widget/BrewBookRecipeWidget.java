@@ -17,7 +17,6 @@ import com.thebaileybrew.baileybrewbook.ui.RecipeDetailActivity;
  * Implementation of App Widget functionality.
  */
 public class BrewBookRecipeWidget extends AppWidgetProvider {
-
     private final static String TAG = BrewBookRecipeWidget.class.getSimpleName();
 
     private static void updateAppWidget(Context context, AppWidgetManager appWidgetManager,

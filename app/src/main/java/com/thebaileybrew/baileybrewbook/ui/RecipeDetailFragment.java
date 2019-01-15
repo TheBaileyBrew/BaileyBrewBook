@@ -2,6 +2,7 @@ package com.thebaileybrew.baileybrewbook.ui;
 
 import android.app.Activity;
 
+import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.LoadControl;
@@ -9,9 +10,14 @@ import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
+import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
+import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.trackselection.TrackSelector;
+import com.google.android.exoplayer2.ui.AspectRatioFrameLayout;
 import com.google.android.exoplayer2.ui.PlayerView;
+import com.google.android.exoplayer2.upstream.DataSource;
+import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
 import com.google.android.material.appbar.CollapsingToolbarLayout;
@@ -42,6 +48,7 @@ import com.thebaileybrew.baileybrewbook.database.RecipeRepository;
 import com.thebaileybrew.baileybrewbook.database.models.Ingredient;
 import com.thebaileybrew.baileybrewbook.database.models.Recipe;
 import com.thebaileybrew.baileybrewbook.database.models.Step;
+import com.thebaileybrew.baileybrewbook.utils.ConstantUtils;
 import com.thebaileybrew.baileybrewbook.utils.adapters.IngredientAdapter;
 import com.thebaileybrew.baileybrewbook.utils.interfaces.OnBackPressed;
 
@@ -57,10 +64,7 @@ import java.util.List;
 public class RecipeDetailFragment extends Fragment implements View.OnClickListener, StepView.OnStepClickListener, OnBackPressed {
     private static final String TAG = RecipeDetailFragment.class.getSimpleName();
 
-    public static final String ARG_ITEM_ID = "item_id";
-    public static final String ARG_BOOLEAN = "boolean_two_pane";
-    private static final String SAVED_POSITION = "saved_player_position";
-    private static  final String SAVED_STEP = "saved_stepper_position";
+
 
     private Recipe mRecipe = new Recipe();
     private final RecipeRepository recipeRepository;
@@ -76,9 +80,17 @@ public class RecipeDetailFragment extends Fragment implements View.OnClickListen
 
     private SimpleExoPlayer exoPlayer;
     private PlayerView exoPlayerView;
+    private DefaultBandwidthMeter exoBandwidthMeter;
+    private TrackSelection.Factory exoTrackSelectionFactory;
+    private TrackSelector exoTrackSelector;
+    private DataSource.Factory exoDataSourceFactory;
+    private MediaSource exoVideoSource;
+
+
     private long playbackPosition;
     private int currentWindow;
     private boolean playWhenReady;
+    private Uri exoVideoUri;
 
     private Boolean mTwoPane = false;
 
@@ -92,12 +104,12 @@ public class RecipeDetailFragment extends Fragment implements View.OnClickListen
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (getArguments() != null && getArguments().containsKey(ARG_ITEM_ID)) {
+        if (getArguments() != null && getArguments().containsKey(ConstantUtils.ARG_ITEM_ID)) {
             // Load the dummy content specified by the fragment
             // arguments. In a real-world scenario, use a Loader
             // to load content from a content provider.
-            int recipeId = getArguments().getInt(ARG_ITEM_ID);
-            mTwoPane = getArguments().getBoolean(ARG_BOOLEAN);
+            int recipeId = getArguments().getInt(ConstantUtils.ARG_ITEM_ID);
+            mTwoPane = getArguments().getBoolean(ConstantUtils.ARG_BOOLEAN);
             Log.e(TAG, "onCreate: id: " + recipeId );
             mRecipe = recipeRepository.getSingleRecipe(recipeId);
 
@@ -116,25 +128,35 @@ public class RecipeDetailFragment extends Fragment implements View.OnClickListen
             sharedPreferences = PreferenceManager.getDefaultSharedPreferences(BaileyBrewBook.getContext());
 
             if(savedInstanceState != null) {
-                playbackPosition = savedInstanceState.getLong(SAVED_POSITION, 0);
-                currentSelectedStep = savedInstanceState.getInt(SAVED_STEP, 0);
-
+                playbackPosition = savedInstanceState.getLong(ConstantUtils.SAVED_POSITION, 0);
+                currentSelectedStep = savedInstanceState.getInt(ConstantUtils.SAVED_STEP, 0);
+                currentWindow = savedInstanceState.getInt(ConstantUtils.SAVED_WINDOW,0);
+                exoVideoUri = Uri.parse(savedInstanceState.getString(ConstantUtils.SAVED_URI,""));
+                playWhenReady = savedInstanceState.getBoolean(ConstantUtils.SAVED_PLAY_WHEN_READY,true);
             }
+
+            if (!allSteps.get(0).getStepVideoUrl().isEmpty()) {
+                exoVideoUri = Uri.parse(allSteps.get(0).getStepVideoUrl());
+            }
+
+
         }
     }
 
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putLong(SAVED_POSITION, exoPlayer.getCurrentPosition());
-        outState.putInt(SAVED_STEP, stepView.getCurrentStep());
+        outState.putLong(ConstantUtils.SAVED_POSITION, exoPlayer.getCurrentPosition());
+        outState.putInt(ConstantUtils.SAVED_STEP, stepView.getCurrentStep());
+        outState.putInt(ConstantUtils.SAVED_WINDOW, exoPlayer.getCurrentWindowIndex());
+        outState.putString(ConstantUtils.SAVED_URI, allSteps.get(stepView.getCurrentStep()).getStepVideoUrl());
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.recipe_detail, container, false);
-
+        exoPlayerView = rootView.findViewById(R.id.exoplayer);
         // Show the dummy content as text in a TextView.
         if (mRecipe != null) {
             FloatingActionButton fab;
@@ -167,19 +189,18 @@ public class RecipeDetailFragment extends Fragment implements View.OnClickListen
             ingredientList.setAdapter(new IngredientAdapter(BaileyBrewBook.getContext(), allIngredients));
 
             materialSheetFab = new MaterialSheetFab(fab, sheetView, overlayView, sheetColor, fabColor);
-            exoPlayerView = rootView.findViewById(R.id.exoplayer);
+
 
 
             stepView = rootView.findViewById(R.id.recipe_steps);
             stepView.setStepsNumber(allSteps.size());
             stepView.setOnStepClickListener(this);
             stepView.go(currentSelectedStep, true);
-            changeExoPlayer(currentSelectedStep);
+            initializePlayer(Uri.parse(allSteps.get(stepView.getCurrentStep()).getStepVideoUrl()));
             recipeStepTitle = rootView.findViewById(R.id.recipe_step_name);
             recipeStepTitle.setText(allSteps.get(0).getStepShortDescription());
             recipeStepDescription = rootView.findViewById(R.id.recipe_full_description);
             recipeStepDescription.setText(allSteps.get(0).getFullDescription());
-            initializeExoPlayer();
         }
 
         return rootView;
@@ -193,68 +214,58 @@ public class RecipeDetailFragment extends Fragment implements View.OnClickListen
         }
     }
 
-    private void initializeExoPlayer() {
-        //Get the first step instructional video playing
-        if (allSteps.get(0).getStepVideoUrl() != null) {
-            Uri currentStep = Uri.parse(allSteps.get(0).getStepVideoUrl());
-            releasePlayer();
-            TrackSelector track = new DefaultTrackSelector();
-            LoadControl loadControl = new DefaultLoadControl();
-            exoPlayer = ExoPlayerFactory.newSimpleInstance(BaileyBrewBook.getContext(),track,loadControl);
-            exoPlayerView.setPlayer(exoPlayer);
-            exoPlayer.setPlayWhenReady(playWhenReady);
-            exoPlayer.seekTo(currentWindow, playbackPosition);
-
-            String userAgent = Util.getUserAgent(BaileyBrewBook.getContext(), "Bailey Brew Book");
-            MediaSource mediaSource = new ExtractorMediaSource(currentStep,
-                    new DefaultDataSourceFactory(BaileyBrewBook.getContext(), userAgent),
-                    new DefaultExtractorsFactory(), null, null);
-            exoPlayer.prepare(mediaSource);
-
-        }
-    }
-    private void reloadExoPlayer(int step) {
-        if (allSteps.get(step).getStepVideoUrl() != null) {
-            exoPlayerView.setVisibility(View.VISIBLE);
-            Uri currentStep = Uri.parse(allSteps.get(step).getStepVideoUrl());
-            TrackSelector track = new DefaultTrackSelector();
-            LoadControl loadControl = new DefaultLoadControl();
-            exoPlayer = ExoPlayerFactory.newSimpleInstance(BaileyBrewBook.getContext(), track, loadControl);
-            exoPlayerView.setPlayer(exoPlayer);
-
-            String userAgent = Util.getUserAgent(BaileyBrewBook.getContext(), "Bailey Brew Book");
-            MediaSource mediaSource = new ExtractorMediaSource(currentStep,
-                    new DefaultDataSourceFactory(BaileyBrewBook.getContext(), userAgent),
-                    new DefaultExtractorsFactory(), null, null);
-            exoPlayer.prepare(mediaSource);
-            exoPlayer.setPlayWhenReady(true);
+    public void initializePlayer(Uri videoUri) {
+        if (videoUri == null) {
+            exoPlayerView.setVisibility(View.GONE);
         } else {
-            exoPlayerView.setVisibility(View.INVISIBLE);
+            if (exoPlayer == null) {
+                exoBandwidthMeter = new DefaultBandwidthMeter();
+                exoTrackSelectionFactory = new AdaptiveTrackSelection.Factory(exoBandwidthMeter);
+                exoTrackSelector = new DefaultTrackSelector(exoTrackSelectionFactory);
+
+                //Create the player
+                exoPlayer = ExoPlayerFactory.newSimpleInstance(BaileyBrewBook.getContext(), exoTrackSelector);
+
+                //Bind the player with the view
+                exoPlayerView.setPlayer(exoPlayer);
+                exoPlayerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FIXED_WIDTH);
+
+                //Get DataSource instance
+                exoDataSourceFactory = new DefaultDataSourceFactory(BaileyBrewBook.getContext(),
+                        Util.getUserAgent(BaileyBrewBook.getContext(),getString(R.string.app_name)),exoBandwidthMeter);
+
+                //Get MediaSource
+                exoVideoSource = new ExtractorMediaSource.Factory(exoDataSourceFactory).createMediaSource(videoUri);
+
+                if (playbackPosition != C.TIME_UNSET) {
+                    exoPlayer.seekTo(playbackPosition);
+                }
+
+                //Prepare the player
+                exoPlayer.prepare(exoVideoSource);
+            }
         }
     }
+
 
 
     private void releasePlayer() {
         if (exoPlayer != null) {
-            playbackPosition = exoPlayer.getCurrentPosition(); //long
-            currentWindow = exoPlayer.getCurrentWindowIndex(); //int
-            playWhenReady = exoPlayer.getPlayWhenReady(); //boolean
             exoPlayer.stop();
             exoPlayer.release();
             exoPlayer = null;
+            exoDataSourceFactory = null;
+            exoVideoSource = null;
+            exoTrackSelectionFactory = null;
         }
     }
 
-    private void changeExoPlayer(int step) {
-        releasePlayer();
-        reloadExoPlayer(step);
-    }
 
     @Override
     public void onStart() {
         super.onStart();
         if (Util.SDK_INT > 23) {
-            initializeExoPlayer();
+            initializePlayer(exoVideoUri);
         }
     }
 
@@ -262,23 +273,45 @@ public class RecipeDetailFragment extends Fragment implements View.OnClickListen
     public void onResume() {
         super.onResume();
         if ((Util.SDK_INT <= 23 || exoPlayer == null)) {
-            initializeExoPlayer();
+            initializePlayer(exoVideoUri);
+        }
+        if (exoPlayer != null) {
+            if (playbackPosition > 0) {
+                exoPlayer.setPlayWhenReady(playWhenReady);
+                exoPlayerView.hideController();
+            }
+
+            exoPlayer.seekTo(playbackPosition);
         }
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        if (Util.SDK_INT <= 23) {
-            releasePlayer();
+        if (exoPlayer != null) {
+            updatePositionData();
+            if (Util.SDK_INT <= 23) {
+                releasePlayer();
+            }
         }
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        if (Util.SDK_INT > 23) {
-            releasePlayer();
+        if (exoPlayer != null) {
+            updatePositionData();
+            if (Util.SDK_INT <= 23) {
+                releasePlayer();
+            }
+        }
+    }
+
+    private void updatePositionData() {
+        if (exoPlayer != null) {
+            playWhenReady = exoPlayer.getPlayWhenReady();
+            currentWindow = exoPlayer.getCurrentWindowIndex();
+            playbackPosition = exoPlayer.getCurrentPosition();
         }
     }
 
@@ -314,7 +347,8 @@ public class RecipeDetailFragment extends Fragment implements View.OnClickListen
         }
         recipeStepTitle.setText(allSteps.get(step).getStepShortDescription());
         recipeStepDescription.setText(allSteps.get(step).getFullDescription());
-        changeExoPlayer(step);
+        exoVideoUri = Uri.parse(allSteps.get(step).getStepVideoUrl());
+        initializePlayer(exoVideoUri);
 
     }
 

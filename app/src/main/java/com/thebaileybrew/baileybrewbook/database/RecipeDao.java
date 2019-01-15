@@ -24,9 +24,4 @@ public interface RecipeDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertRecipe(Recipe recipe);
 
-// --Commented out by Inspection START (1/11/2019 1:06 PM):
-//    @Delete
-//    void deleteRecipe(Recipe recipe);
-// --Commented out by Inspection STOP (1/11/2019 1:06 PM)
-
 }

@@ -5,6 +5,7 @@ import android.os.Bundle;
 
 import androidx.appcompat.widget.Toolbar;
 
+import android.os.PersistableBundle;
 import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -19,6 +20,7 @@ import com.thebaileybrew.baileybrewbook.BaileyBrewBook;
 import com.thebaileybrew.baileybrewbook.R;
 import com.thebaileybrew.baileybrewbook.database.RecipeRepository;
 import com.thebaileybrew.baileybrewbook.database.models.Recipe;
+import com.thebaileybrew.baileybrewbook.utils.ConstantUtils;
 
 import java.util.List;
 
@@ -62,16 +64,22 @@ public class RecipeDetailActivity extends AppCompatActivity {
             // Create the detail fragment and add it to the activity
             // using a fragment transaction.
             Bundle arguments = new Bundle();
-            arguments.putInt(RecipeDetailFragment.ARG_ITEM_ID,
-                    getIntent().getIntExtra(RecipeDetailFragment.ARG_ITEM_ID,0));
+            arguments.putInt(ConstantUtils.ARG_ITEM_ID,
+                    getIntent().getIntExtra(ConstantUtils.ARG_ITEM_ID,0));
             RecipeDetailFragment fragment = new RecipeDetailFragment();
             fragment.setArguments(arguments);
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.recipe_detail_container, fragment)
                     .commit();
-            int currentID = arguments.getInt(RecipeDetailFragment.ARG_ITEM_ID);
+            int currentID = arguments.getInt(ConstantUtils.ARG_ITEM_ID);
             loadToolbarImage(currentID);
         }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
+        super.onSaveInstanceState(outState, outPersistentState);
+
     }
 
     private void loadToolbarImage(int currentID) {
